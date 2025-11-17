@@ -2,54 +2,130 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Hasil Kompresi</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Kompresi - Huffman Image Compression</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">Hasil Kompresi</h1>
+                <p class="subtitle">{{ data.filename }}</p>
+            </div>
+        </header>
 
-<div class="container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <p class="stat-label">Ukuran Asli</p>
+                        <p class="stat-value">{{ "%.2f"|format(data.original_size_kb) }} KB</p>
+                        <p class="stat-hint">{{ data.original_size_bits }} bits</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🗜️</div>
+                    <div class="stat-content">
+                        <p class="stat-label">Ukuran Kompresi</p>
+                        <p class="stat-value">{{ "%.2f"|format(data.compressed_size_kb) }} KB</p>
+                        <p class="stat-hint">{{ data.compressed_size_bits }} bits</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <p class="stat-label">Rasio Kompresi</p>
+                        <p class="stat-value">{{ data.compression_ratio }}:1</p>
+                        <p class="stat-hint">{{ data.savings_percent }}% lebih kecil</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎨</div>
+                    <div class="stat-content">
+                        <p class="stat-label">Resolusi</p>
+                        <p class="stat-value">{{ data.image_shape[1] }}×{{ data.image_shape[0] }}</p>
+                        <p class="stat-hint">{{ data.unique_pixels }} unique pixels</p>
+                    </div>
+                </div>
+            </div>
 
-    <header class="top-bar">
-        <div class="brand">HuffmanLab</div>
-        <button id="themeToggle" class="theme-toggle">🌙</button>
-    </header>
+            <!-- Image Comparison -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Perbandingan Gambar</h2>
+                    <p class="card-description">Preview gambar asli dan hasil grayscale</p>
+                </div>
+                <div class="card-body">
+                    <div class="image-comparison">
+                        <div class="image-box">
+                            <p class="image-label">Gambar Asli</p>
+                            <img src="{{ data.original_image }}" alt="Original Image" class="preview-img">
+                        </div>
+                        <div class="image-box">
+                            <p class="image-label">Grayscale (Dikompresi)</p>
+                            <img src="{{ data.gray_image }}" alt="Grayscale Image" class="preview-img">
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <h1 class="title">Hasil Kompresi</h1>
+            <!-- Download Files -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Download Hasil Kompresi</h2>
+                    <p class="card-description">Download file-file hasil kompresi untuk dekompresi nanti</p>
+                </div>
+                <div class="card-body">
+                    <div class="download-grid">
+                        <a href="{{ data.compressed_file }}" download class="download-btn">
+                            <div class="download-icon">📦</div>
+                            <div class="download-info">
+                                <p class="download-title">Compressed Binary</p>
+                                <p class="download-desc">{{ data.base_name }}_compressed.bin</p>
+                            </div>
+                        </a>
+                        <a href="{{ data.codes_file }}" download class="download-btn">
+                            <div class="download-icon">🔑</div>
+                            <div class="download-info">
+                                <p class="download-title">Huffman Codes</p>
+                                <p class="download-desc">{{ data.base_name }}_codes.json</p>
+                            </div>
+                        </a>
+                        <a href="{{ data.size_file }}" download class="download-btn">
+                            <div class="download-icon">📏</div>
+                            <div class="download-info">
+                                <p class="download-title">Image Size</p>
+                                <p class="download-desc">{{ data.base_name }}_size.txt</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
 
-    <div class="card">
+            <!-- Navigation -->
+            <div class="action-buttons">
+                <a href="/" class="btn btn-secondary">← Kembali ke Home</a>
+                <button onclick="window.print()" class="btn btn-outline">🖨️ Print Hasil</button>
+            </div>
+        </main>
 
-        <p><b>Ukuran Asli:</b> {{ original }} bit</p>
-        <p><b>Ukuran Terkompresi:</b> {{ compressed }} bit</p>
-        <p><b>Rasio Kompresi:</b> {{ ratio }}</p>
-
-        <h3>Hasil Decode:</h3>
-
-        <img src="{{ decode_image }}" class="preview-image">
-
-        <a class="btn primary" href="/">Kembali</a>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Pengolahan Citra Digital Lab | Huffman Image Compression System</p>
+        </footer>
     </div>
-</div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.getElementById("themeToggle");
-    const body = document.body;
-
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-        body.classList.add("dark-mode");
-        toggle.textContent = "☀️";
-    }
-
-    toggle.addEventListener("click", () => {
-        body.classList.toggle("dark-mode");
-        const dark = body.classList.contains("dark-mode");
-        toggle.textContent = dark ? "☀️" : "🌙";
-        localStorage.setItem("theme", dark ? "dark" : "light");
-    });
-});
-</script>
-
+    <script>
+        // Auto scroll to top on load
+        window.onload = function() {
+            window.scrollTo(0, 0);
+        };
+    </script>
 </body>
 </html>
