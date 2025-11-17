@@ -676,27 +676,64 @@ canvas {
 /* ========================================
    RESPONSIVE
    ======================================== */
+
+/* Tablet landscape and below */
+@media (max-width: 1024px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .stats-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tablet portrait and below */
 @media (max-width: 768px) {
+    body {
+        padding: var(--spacing-sm);
+    }
+
     .title {
         font-size: 2rem;
+        letter-spacing: -0.01em;
     }
 
     .subtitle {
         font-size: 1rem;
     }
 
+    .header {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+
     .stats-grid,
     .stats-grid-4 {
         grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
     }
 
     .charts-grid {
         grid-template-columns: 1fr;
     }
 
+    .card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
     .card-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
     }
 
     .image-comparison {
@@ -705,6 +742,124 @@ canvas {
 
     .container {
         padding: var(--spacing-sm);
+    }
+
+    .upload-box {
+        padding: var(--spacing-lg);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+    }
+
+    .decompress-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .download-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .table-container {
+        font-size: 0.875rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+}
+
+/* Mobile landscape */
+@media (max-width: 640px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .card {
+        padding: var(--spacing-sm);
+    }
+
+    .stat-card {
+        padding: var(--spacing-sm);
+        flex-direction: row;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .fullscreen-content {
+        width: 95%;
+        height: 95%;
+    }
+}
+
+/* Mobile portrait */
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+    }
+
+    .upload-text {
+        font-size: 1rem;
+    }
+
+    .upload-hint {
+        font-size: 0.8rem;
+    }
+
+    .preview-img {
+        max-height: 200px;
+    }
+
+    /* Make table scrollable horizontally on very small screens */
+    .table-container {
+        font-size: 0.8rem;
+    }
+
+    .filename-cell {
+        font-size: 0.75rem;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
 
@@ -748,4 +903,55 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-blue);
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+.btn:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --text-primary: #ffffff;
+        --text-secondary: #e0e0e0;
+        --border-color: #ffffff;
+    }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

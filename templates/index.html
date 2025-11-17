@@ -2,8 +2,24 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Aplikasi kompresi citra menggunakan algoritma Huffman Coding. Lossless image compression untuk format JPG, PNG, dan BMP dengan analisis statistik lengkap.">
+    <meta name="keywords" content="huffman coding, image compression, kompresi citra, lossless compression, pengolahan citra digital">
+    <meta name="author" content="Pengolahan Citra Digital Lab">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Huffman Image Compression - Professional Image Compression Tool">
+    <meta property="og:description" content="Kompresi citra lossless menggunakan algoritma Huffman Coding dengan UI modern dan responsif">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Huffman Image Compression">
+    <meta name="twitter:description" content="Professional lossless image compression tool">
+
     <title>Huffman Image Compression - Pengolahan Citra Digital</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,17 +44,17 @@
                     <p class="card-description">Upload satu gambar untuk dikompresi menggunakan Huffman Coding</p>
                 </div>
                 <div class="card-body">
-                    <form id="singleImageForm" action="/compress" method="POST" enctype="multipart/form-data">
-                        <div class="upload-box" id="singleDropZone">
-                            <input type="file" id="singleImageInput" name="image" accept=".jpg,.jpeg,.png,.bmp" style="display: none;">
-                            <div class="upload-icon">📁</div>
+                    <form id="singleImageForm" action="/compress" method="POST" enctype="multipart/form-data" aria-label="Form kompresi satu gambar">
+                        <div class="upload-box" id="singleDropZone" role="button" tabindex="0" aria-label="Area upload gambar. Klik atau drag & drop untuk memilih file">
+                            <input type="file" id="singleImageInput" name="image" accept=".jpg,.jpeg,.png,.bmp" aria-label="Pilih gambar untuk dikompresi" style="display: none;">
+                            <div class="upload-icon" aria-hidden="true">📁</div>
                             <p class="upload-text">Drag & drop gambar atau klik untuk upload</p>
                             <p class="upload-hint">Mendukung: JPG, PNG, BMP (Max 50MB)</p>
-                            <div id="singlePreview" class="preview-container"></div>
+                            <div id="singlePreview" class="preview-container" role="status" aria-live="polite"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="singleSubmitBtn" disabled>
+                        <button type="submit" class="btn btn-primary" id="singleSubmitBtn" disabled aria-label="Tombol kompresi gambar">
                             <span class="btn-text">Kompresi Gambar</span>
-                            <div class="spinner" style="display: none;"></div>
+                            <div class="spinner" style="display: none;" role="status" aria-label="Memproses"></div>
                         </button>
                     </form>
                 </div>
@@ -51,17 +67,17 @@
                     <p class="card-description">Upload beberapa gambar sekaligus untuk analisis kompresi batch</p>
                 </div>
                 <div class="card-body">
-                    <form id="datasetForm" action="/compress_dataset" method="POST" enctype="multipart/form-data">
-                        <div class="upload-box" id="datasetDropZone">
-                            <input type="file" id="datasetInput" name="images" accept=".jpg,.jpeg,.png,.bmp" multiple style="display: none;">
-                            <div class="upload-icon">📦</div>
+                    <form id="datasetForm" action="/compress_dataset" method="POST" enctype="multipart/form-data" aria-label="Form kompresi multiple gambar">
+                        <div class="upload-box" id="datasetDropZone" role="button" tabindex="0" aria-label="Area upload dataset. Klik atau drag & drop untuk memilih beberapa file">
+                            <input type="file" id="datasetInput" name="images" accept=".jpg,.jpeg,.png,.bmp" multiple aria-label="Pilih beberapa gambar untuk dikompresi" style="display: none;">
+                            <div class="upload-icon" aria-hidden="true">📦</div>
                             <p class="upload-text">Drag & drop multiple images atau klik untuk upload</p>
                             <p class="upload-hint">Pilih beberapa gambar sekaligus untuk batch processing</p>
-                            <div id="datasetPreview" class="preview-container"></div>
+                            <div id="datasetPreview" class="preview-container" role="status" aria-live="polite"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="datasetSubmitBtn" disabled>
+                        <button type="submit" class="btn btn-primary" id="datasetSubmitBtn" disabled aria-label="Tombol kompresi dataset">
                             <span class="btn-text">Kompresi Dataset</span>
-                            <div class="spinner" style="display: none;"></div>
+                            <div class="spinner" style="display: none;" role="status" aria-label="Memproses"></div>
                         </button>
                     </form>
                 </div>
@@ -74,24 +90,27 @@
                     <p class="card-description">Upload file hasil kompresi untuk mendapatkan kembali gambar asli</p>
                 </div>
                 <div class="card-body">
-                    <form id="decompressForm" action="/decompress" method="POST" enctype="multipart/form-data">
+                    <form id="decompressForm" action="/decompress" method="POST" enctype="multipart/form-data" aria-label="Form dekompresi gambar">
                         <div class="decompress-inputs">
                             <div class="file-input-group">
                                 <label for="binFile" class="file-label">Compressed Binary (.bin)</label>
-                                <input type="file" id="binFile" name="bin_file" accept=".bin" class="file-input">
+                                <input type="file" id="binFile" name="bin_file" accept=".bin" class="file-input" aria-required="true" aria-describedby="bin-hint">
+                                <span id="bin-hint" class="sr-only">File binary hasil kompresi</span>
                             </div>
                             <div class="file-input-group">
                                 <label for="codesFile" class="file-label">Huffman Codes (.json)</label>
-                                <input type="file" id="codesFile" name="codes_file" accept=".json" class="file-input">
+                                <input type="file" id="codesFile" name="codes_file" accept=".json" class="file-input" aria-required="true" aria-describedby="codes-hint">
+                                <span id="codes-hint" class="sr-only">File JSON berisi Huffman codes</span>
                             </div>
                             <div class="file-input-group">
                                 <label for="sizeFile" class="file-label">Image Size (.txt)</label>
-                                <input type="file" id="sizeFile" name="size_file" accept=".txt" class="file-input">
+                                <input type="file" id="sizeFile" name="size_file" accept=".txt" class="file-input" aria-required="true" aria-describedby="size-hint">
+                                <span id="size-hint" class="sr-only">File teks berisi ukuran gambar</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-secondary" id="decompressSubmitBtn" disabled>
+                        <button type="submit" class="btn btn-secondary" id="decompressSubmitBtn" disabled aria-label="Tombol dekompresi gambar">
                             <span class="btn-text">Dekompresi</span>
-                            <div class="spinner" style="display: none;"></div>
+                            <div class="spinner" style="display: none;" role="status" aria-label="Memproses"></div>
                         </button>
                     </form>
                 </div>

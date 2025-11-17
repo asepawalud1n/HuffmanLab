@@ -185,7 +185,7 @@
         // Data from Flask
         const chartData = {{ data.chart_data | tojson }};
 
-        // Chart.js Configuration
+        // Chart.js Configuration - Dark Mode
         const chartConfig = {
             responsive: true,
             maintainAspectRatio: true,
@@ -197,8 +197,30 @@
                 legend: {
                     position: 'top',
                     labels: {
-                        font: { family: 'Inter', size: 12 },
-                        color: '#374151'
+                        font: { family: 'Inter', size: 12, weight: '500' },
+                        color: '#f1f5f9',
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#475569',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(2);
+                            }
+                            return label;
+                        }
                     }
                 }
             }
@@ -233,17 +255,28 @@
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            color: '#6b7280',
+                            color: '#cbd5e1',
                             font: { family: 'Inter', size: 11 }
                         },
-                        grid: { color: 'rgba(156, 163, 175, 0.2)' }
+                        grid: {
+                            color: 'rgba(71, 85, 105, 0.3)',
+                            drawBorder: false
+                        },
+                        border: {
+                            display: false
+                        }
                     },
                     x: {
                         ticks: {
-                            color: '#6b7280',
-                            font: { family: 'Inter', size: 10 }
+                            color: '#cbd5e1',
+                            font: { family: 'Inter', size: 10 },
+                            maxRotation: 45,
+                            minRotation: 45
                         },
-                        grid: { display: false }
+                        grid: { display: false },
+                        border: {
+                            display: false
+                        }
                     }
                 }
             }
@@ -276,17 +309,28 @@
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            color: '#6b7280',
+                            color: '#cbd5e1',
                             font: { family: 'Inter', size: 11 }
                         },
-                        grid: { color: 'rgba(156, 163, 175, 0.2)' }
+                        grid: {
+                            color: 'rgba(71, 85, 105, 0.3)',
+                            drawBorder: false
+                        },
+                        border: {
+                            display: false
+                        }
                     },
                     x: {
                         ticks: {
-                            color: '#6b7280',
-                            font: { family: 'Inter', size: 10 }
+                            color: '#cbd5e1',
+                            font: { family: 'Inter', size: 10 },
+                            maxRotation: 45,
+                            minRotation: 45
                         },
-                        grid: { display: false }
+                        grid: { display: false },
+                        border: {
+                            display: false
+                        }
                     }
                 }
             }
@@ -321,9 +365,31 @@
                     legend: {
                         position: 'bottom',
                         labels: {
-                            font: { family: 'Inter', size: 12 },
-                            color: '#374151',
-                            padding: 15
+                            font: { family: 'Inter', size: 12, weight: '500' },
+                            color: '#f1f5f9',
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#475569',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed.toFixed(2) + ' KB';
+                                }
+                                return label;
+                            }
                         }
                     }
                 }
