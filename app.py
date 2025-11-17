@@ -1,230 +1,294 @@
+from flask import Flask, render_template, request, send_file, jsonify, url_for
+from werkzeug.utils import secure_filename
 import os
-import cv2
 import json
-import numpy as np
-from flask import Flask, render_template, request, send_file, jsonify, Response
-from heapq import heapify, heappush, heappop
+import csv
+from datetime import datetime
+from huffman import HuffmanCoding, calculate_dataset_statistics
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "uploads"
-RESULT_FOLDER = "results"
-DATASET_FOLDER = "dataset"
-DATASET_OUTPUT = "dataset_results"
+# Configuration
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['COMPRESSED_FOLDER'] = 'static/compressed'
+app.config['DECOMPRESSED_FOLDER'] = 'static/decompressed'
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'bmp'}
 
-for f in [UPLOAD_FOLDER, RESULT_FOLDER, DATASET_FOLDER, DATASET_OUTPUT]:
-    os.makedirs(f, exist_ok=True)
-
-
-# ============================
-# HUFFMAN NODE
-# ============================
-class Node:
-    def __init__(self, freq, symbol, left=None, right=None):
-        self.freq = freq
-        self.symbol = symbol
-        self.left = left
-        self.right = right
-
-    def __lt__(self, other):
-        return self.freq < other.freq
+# Ensure folders exist
+for folder in [app.config['UPLOAD_FOLDER'],
+               app.config['COMPRESSED_FOLDER'],
+               app.config['DECOMPRESSED_FOLDER']]:
+    os.makedirs(folder, exist_ok=True)
 
 
-# ============================
-# BUILD HUFFMAN CODES
-# ============================
-def build_codes(node, code, mapping):
-    if node is None:
-        return
-    if node.symbol is not None:
-        mapping[str(node.symbol)] = code
-        return
-    build_codes(node.left, code + "0", mapping)
-    build_codes(node.right, code + "1", mapping)
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-# ============================
-# HOME PAGE
-# ============================
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    """Home page"""
+    return render_template('index.html')
 
 
-# ============================
-# ENCODE 1 GAMBAR
-# ============================
-@app.route("/encode", methods=["POST"])
-def encode():
-    file = request.files["image"]
-    filename = file.filename
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(path)
+@app.route('/compress', methods=['POST'])
+def compress_single():
+    """
+    Endpoint untuk kompresi single image
 
-    img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    flat = img.flatten()
+    Returns:
+        JSON dengan hasil kompresi atau redirect ke result page
+    """
+    if 'image' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
 
-    h, w = img.shape
+    file = request.files['image']
 
-    with open(f"{RESULT_FOLDER}/size.txt", "w") as f:
-        f.write(f"{h},{w}")
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
 
-    # Frekuensi pixel
-    freq = {}
-    for p in flat:
-        freq[p] = freq.get(p, 0) + 1
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{filename}"
 
-    heap = [Node(freq[p], p) for p in freq]
-    heapify(heap)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
 
-    while len(heap) > 1:
-        left = heappop(heap)
-        right = heappop(heap)
-        merged = Node(left.freq + right.freq, None, left, right)
-        heappush(heap, merged)
+        try:
+            # Kompresi
+            huffman = HuffmanCoding()
+            result = huffman.compress_image(filepath, app.config['COMPRESSED_FOLDER'])
 
-    root = heap[0]
+            # Data untuk template
+            data = {
+                'success': True,
+                'filename': result['filename'],
+                'base_name': result['base_name'],
+                'original_size_bits': result['original_size'],
+                'compressed_size_bits': result['compressed_size'],
+                'original_size_kb': result['original_size'] / 8 / 1024,
+                'compressed_size_kb': result['compressed_size'] / 8 / 1024,
+                'compression_ratio': round(result['compression_ratio'], 2),
+                'savings_percent': round((1 - result['compressed_size'] / result['original_size']) * 100, 2),
+                'image_shape': result['image_shape'],
+                'unique_pixels': result['unique_pixels'],
+                'original_image': url_for('static', filename=f'uploads/{filename}'),
+                'gray_image': url_for('static', filename=f'compressed/{result["base_name"]}_gray.png'),
+                'compressed_file': url_for('static', filename=f'compressed/{result["base_name"]}_compressed.bin'),
+                'codes_file': url_for('static', filename=f'compressed/{result["base_name"]}_codes.json'),
+                'size_file': url_for('static', filename=f'compressed/{result["base_name"]}_size.txt')
+            }
 
-    codes = {}
-    build_codes(root, "", codes)
+            return render_template('result.html', data=data)
 
-    with open(f"{RESULT_FOLDER}/codes.json", "w") as f:
-        json.dump(codes, f)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
-    encoded = "".join(codes[str(p)] for p in flat)
-
-    with open(f"{RESULT_FOLDER}/compressed.bin", "wb") as f:
-        f.write(int(encoded, 2).to_bytes((len(encoded) + 7) // 8, "big"))
-
-    original_size = len(flat) * 8
-    compressed_size = len(encoded)
-    ratio = round(original_size / compressed_size, 2)
-
-    return render_template(
-        "result.html",
-        filename=filename,
-        original=original_size,
-        compressed=compressed_size,
-        ratio=ratio,
-    )
-
-
-# ============================
-# DECODE 1 GAMBAR
-# ============================
-@app.route("/decode")
-def decode():
-    with open(f"{RESULT_FOLDER}/size.txt", "r") as f:
-        h, w = map(int, f.read().split(","))
-
-    with open(f"{RESULT_FOLDER}/codes.json", "r") as f:
-        codes = json.load(f)
-
-    reverse = {v: int(k) for k, v in codes.items()}
-
-    with open(f"{RESULT_FOLDER}/compressed.bin", "rb") as f:
-        bitstring = bin(int.from_bytes(f.read(), "big"))[2:]
-
-    decoded = []
-    current = ""
-
-    for bit in bitstring:
-        current += bit
-        if current in reverse:
-            decoded.append(reverse[current])
-            current = ""
-
-    arr = np.array(decoded, dtype=np.uint8).reshape((h, w))
-    out_path = f"{RESULT_FOLDER}/hasil_decode.png"
-    cv2.imwrite(out_path, arr)
-
-    return send_file(out_path, mimetype="image/png")
+    return jsonify({'error': 'Invalid file type'}), 400
 
 
-# ============================
-# ENCODE DATASET
-# ============================
-@app.route("/dataset-encode", methods=["POST"])
-def dataset_encode():
-    uploaded = request.files.getlist("dataset[]")
+@app.route('/decompress', methods=['POST'])
+def decompress():
+    """
+    Endpoint untuk dekompresi
+
+    Expects:
+        - compressed.bin
+        - codes.json
+        - size.txt
+
+    Returns:
+        Decompressed image file
+    """
+    if 'bin_file' not in request.files or 'codes_file' not in request.files or 'size_file' not in request.files:
+        return jsonify({'error': 'Missing required files (bin, codes, size)'}), 400
+
+    bin_file = request.files['bin_file']
+    codes_file = request.files['codes_file']
+    size_file = request.files['size_file']
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    # Save uploaded files
+    bin_path = os.path.join(app.config['UPLOAD_FOLDER'], f'temp_{timestamp}.bin')
+    codes_path = os.path.join(app.config['UPLOAD_FOLDER'], f'temp_{timestamp}_codes.json')
+    size_path = os.path.join(app.config['UPLOAD_FOLDER'], f'temp_{timestamp}_size.txt')
+
+    bin_file.save(bin_path)
+    codes_file.save(codes_path)
+    size_file.save(size_path)
+
+    # Output path
+    output_path = os.path.join(app.config['DECOMPRESSED_FOLDER'], f'decompressed_{timestamp}.png')
+
+    try:
+        huffman = HuffmanCoding()
+        result = huffman.decompress_image(bin_path, codes_path, size_path, output_path)
+
+        # Clean up temp files
+        os.remove(bin_path)
+        os.remove(codes_path)
+        os.remove(size_path)
+
+        return send_file(output_path, mimetype='image/png', as_attachment=True,
+                        download_name=f'decompressed_{timestamp}.png')
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/compress_dataset', methods=['POST'])
+def compress_dataset():
+    """
+    Endpoint untuk kompresi multiple images (dataset)
+
+    Returns:
+        HTML page dengan tabel, statistik, dan grafik
+    """
+    if 'images' not in request.files:
+        return jsonify({'error': 'No files uploaded'}), 400
+
+    files = request.files.getlist('images')
+
+    if not files or files[0].filename == '':
+        return jsonify({'error': 'No files selected'}), 400
 
     results = []
-    total_original = 0
-    total_compressed = 0
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-    for file in uploaded:
-        filename = file.filename
-        path = os.path.join(DATASET_FOLDER, filename)
-        file.save(path)
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filename = f"{timestamp}_{filename}"
 
-        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-        flat = img.flatten()
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
 
-        freq = {}
-        for p in flat:
-            freq[p] = freq.get(p, 0) + 1
+            try:
+                huffman = HuffmanCoding()
+                result = huffman.compress_image(filepath, app.config['COMPRESSED_FOLDER'])
+                results.append(result)
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
+                continue
 
-        heap = [Node(freq[p], p) for p in freq]
-        heapify(heap)
+    if not results:
+        return jsonify({'error': 'No files were successfully processed'}), 400
 
-        while len(heap) > 1:
-            left = heappop(heap)
-            right = heappop(heap)
-            merged = Node(left.freq + right.freq, None, left, right)
-            heappush(heap, merged)
+    # Calculate statistics
+    stats = calculate_dataset_statistics(results)
 
-        root = heap[0]
-
-        codes = {}
-        build_codes(root, "", codes)
-
-        encoded = "".join(codes[str(p)] for p in flat)
-
-        with open(os.path.join(DATASET_OUTPUT, filename + ".bin"), "wb") as f:
-            f.write(int(encoded, 2).to_bytes((len(encoded) + 7) // 8, "big"))
-
-        original_bits = len(flat) * 8
-        compressed_bits = len(encoded)
-        ratio = round(original_bits / compressed_bits, 2)
-
-        total_original += original_bits
-        total_compressed += compressed_bits
-
-        results.append({
-            "name": filename,
-            "original": original_bits,
-            "compressed": compressed_bits,
-            "ratio": ratio
+    # Prepare data for template
+    table_data = []
+    for r in results:
+        table_data.append({
+            'filename': r['filename'],
+            'original_kb': round(r['original_size'] / 8 / 1024, 2),
+            'compressed_kb': round(r['compressed_size'] / 8 / 1024, 2),
+            'ratio': round(r['compression_ratio'], 2),
+            'savings': round((1 - r['compressed_size'] / r['original_size']) * 100, 2)
         })
 
-    return render_template(
-        "dataset_result.html",
-        results=results,
-        total_original=total_original,
-        total_compressed=total_compressed,
-    )
+    # Data for charts
+    chart_data = {
+        'labels': [r['filename'] for r in results],
+        'original_sizes': [r['original_size'] / 8 / 1024 for r in results],  # KB
+        'compressed_sizes': [r['compressed_size'] / 8 / 1024 for r in results],  # KB
+        'ratios': [r['compression_ratio'] for r in results]
+    }
+
+    data = {
+        'success': True,
+        'total_files': len(results),
+        'table_data': table_data,
+        'stats': {
+            'mean_ratio': round(stats['mean_ratio'], 2),
+            'median_ratio': round(stats['median_ratio'], 2),
+            'max_ratio': round(stats['max_ratio'], 2),
+            'min_ratio': round(stats['min_ratio'], 2),
+            'total_original_kb': round(stats['total_original_bits'] / 8 / 1024, 2),
+            'total_compressed_kb': round(stats['total_compressed_bits'] / 8 / 1024, 2),
+            'total_ratio': round(stats['total_compression_ratio'], 2),
+            'savings_percent': round(stats['savings_percentage'], 2)
+        },
+        'chart_data': chart_data,
+        'timestamp': timestamp
+    }
+
+    return render_template('dataset_result.html', data=data)
 
 
-# ============================
-# DOWNLOAD CSV
-# ============================
-@app.route("/download-csv")
-def download_csv():
-    csv_lines = ["filename,original_bits,compressed_bits,ratio"]
+@app.route('/export_csv/<timestamp>')
+def export_csv(timestamp):
+    """
+    Export hasil kompresi dataset ke CSV
 
-    for file in os.listdir(DATASET_OUTPUT):
-        if file.endswith(".bin"):
-            name = file.replace(".bin", "")
-            csv_lines.append(f"{name},0,0,0")  # placeholder
+    Args:
+        timestamp: Timestamp untuk filter file
 
-    csv_data = "\n".join(csv_lines)
+    Returns:
+        CSV file
+    """
+    # Read all compressed files with matching timestamp
+    compressed_files = os.listdir(app.config['COMPRESSED_FOLDER'])
+    matching_files = [f for f in compressed_files if timestamp in f and f.endswith('_codes.json')]
 
-    return Response(
-        csv_data,
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=dataset_results.csv"},
-    )
+    results = []
+
+    for codes_file in matching_files:
+        base_name = codes_file.replace('_codes.json', '')
+
+        # Read codes to get compression info
+        codes_path = os.path.join(app.config['COMPRESSED_FOLDER'], codes_file)
+        bin_path = os.path.join(app.config['COMPRESSED_FOLDER'], f'{base_name}_compressed.bin')
+        size_path = os.path.join(app.config['COMPRESSED_FOLDER'], f'{base_name}_size.txt')
+
+        if os.path.exists(bin_path) and os.path.exists(size_path):
+            with open(codes_path, 'r') as f:
+                codes = json.load(f)
+
+            with open(size_path, 'r') as f:
+                height, width = map(int, f.read().strip().split(','))
+
+            original_size = height * width * 8
+            compressed_size = os.path.getsize(bin_path) * 8
+
+            results.append({
+                'filename': base_name.replace(f'{timestamp}_', ''),
+                'original_kb': round(original_size / 8 / 1024, 2),
+                'compressed_kb': round(compressed_size / 8 / 1024, 2),
+                'ratio': round(original_size / compressed_size, 2),
+                'savings': round((1 - compressed_size / original_size) * 100, 2)
+            })
+
+    # Create CSV
+    csv_path = os.path.join(app.config['COMPRESSED_FOLDER'], f'results_{timestamp}.csv')
+
+    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+        if results:
+            writer = csv.DictWriter(f, fieldnames=results[0].keys())
+            writer.writeheader()
+            writer.writerows(results)
+
+    return send_file(csv_path, mimetype='text/csv', as_attachment=True,
+                    download_name=f'compression_results_{timestamp}.csv')
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route('/health')
+def health():
+    """Health check endpoint"""
+    return jsonify({'status': 'OK', 'service': 'Huffman Image Compression'})
+
+
+if __name__ == '__main__':
+    print("=" * 60)
+    print("🚀 Huffman Image Compression Web App")
+    print("=" * 60)
+    print("📌 Server: http://localhost:5000")
+    print("📌 Tekan CTRL+C untuk stop server")
+    print("=" * 60)
+    app.run(debug=True, host='0.0.0.0', port=5000)

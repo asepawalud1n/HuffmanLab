@@ -2,139 +2,140 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kompresi Citra Huffman</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Image Compression - Pengolahan Citra Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">Kompresi Citra Huffman</h1>
+                <p class="subtitle">Lossless Image Compression menggunakan Algoritma Huffman Coding</p>
+            </div>
+        </header>
 
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="spinner"></div>
-</div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Single Image Compression -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Kompresi Satu Gambar</h2>
+                    <p class="card-description">Upload satu gambar untuk dikompresi menggunakan Huffman Coding</p>
+                </div>
+                <div class="card-body">
+                    <form id="singleImageForm" action="/compress" method="POST" enctype="multipart/form-data">
+                        <div class="upload-box" id="singleDropZone">
+                            <input type="file" id="singleImageInput" name="image" accept=".jpg,.jpeg,.png,.bmp" style="display: none;">
+                            <div class="upload-icon">📁</div>
+                            <p class="upload-text">Drag & drop gambar atau klik untuk upload</p>
+                            <p class="upload-hint">Mendukung: JPG, PNG, BMP (Max 50MB)</p>
+                            <div id="singlePreview" class="preview-container"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="singleSubmitBtn" disabled>
+                            <span class="btn-text">Kompresi Gambar</span>
+                            <div class="spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+                </div>
+            </section>
 
-<div class="container">
+            <!-- Batch Dataset Compression -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Kompresi Dataset (Multiple Images)</h2>
+                    <p class="card-description">Upload beberapa gambar sekaligus untuk analisis kompresi batch</p>
+                </div>
+                <div class="card-body">
+                    <form id="datasetForm" action="/compress_dataset" method="POST" enctype="multipart/form-data">
+                        <div class="upload-box" id="datasetDropZone">
+                            <input type="file" id="datasetInput" name="images" accept=".jpg,.jpeg,.png,.bmp" multiple style="display: none;">
+                            <div class="upload-icon">📦</div>
+                            <p class="upload-text">Drag & drop multiple images atau klik untuk upload</p>
+                            <p class="upload-hint">Pilih beberapa gambar sekaligus untuk batch processing</p>
+                            <div id="datasetPreview" class="preview-container"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="datasetSubmitBtn" disabled>
+                            <span class="btn-text">Kompresi Dataset</span>
+                            <div class="spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+                </div>
+            </section>
 
-    <header class="top-bar">
-        <div class="brand">HuffmanLab</div>
-        <button id="themeToggle" class="theme-toggle">🌙</button>
-    </header>
+            <!-- Decompression -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Dekompresi Gambar</h2>
+                    <p class="card-description">Upload file hasil kompresi untuk mendapatkan kembali gambar asli</p>
+                </div>
+                <div class="card-body">
+                    <form id="decompressForm" action="/decompress" method="POST" enctype="multipart/form-data">
+                        <div class="decompress-inputs">
+                            <div class="file-input-group">
+                                <label for="binFile" class="file-label">Compressed Binary (.bin)</label>
+                                <input type="file" id="binFile" name="bin_file" accept=".bin" class="file-input">
+                            </div>
+                            <div class="file-input-group">
+                                <label for="codesFile" class="file-label">Huffman Codes (.json)</label>
+                                <input type="file" id="codesFile" name="codes_file" accept=".json" class="file-input">
+                            </div>
+                            <div class="file-input-group">
+                                <label for="sizeFile" class="file-label">Image Size (.txt)</label>
+                                <input type="file" id="sizeFile" name="size_file" accept=".txt" class="file-input">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-secondary" id="decompressSubmitBtn" disabled>
+                            <span class="btn-text">Dekompresi</span>
+                            <div class="spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+                </div>
+            </section>
 
-    <h1 class="title">Kompresi Citra · Metode Huffman</h1>
+            <!-- Info Section -->
+            <section class="card info-card">
+                <div class="card-header">
+                    <h2 class="card-title">Tentang Huffman Coding</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">🔬</div>
+                            <h3>Lossless Compression</h3>
+                            <p>Gambar dapat dikembalikan 100% tanpa kehilangan informasi pixel</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📊</div>
+                            <h3>Variable-Length Coding</h3>
+                            <p>Pixel dengan frekuensi tinggi mendapat kode pendek, menghemat space</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🌳</div>
+                            <h3>Binary Tree Structure</h3>
+                            <p>Menggunakan pohon biner untuk encoding dan decoding yang efisien</p>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">⚡</div>
+                            <h3>Optimal Prefix Code</h3>
+                            <p>Menghasilkan kode prefix optimal berdasarkan statistik data</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-    <!-- Upload gambar tunggal -->
-    <div class="card">
-
-        <h2 class="section-title">Upload Satu Gambar</h2>
-
-        <div class="upload-box" id="singleDrop">
-            <div class="upload-icon">📁</div>
-            <p><b>Klik atau Seret File</b></p>
-            <span>Format: JPG, PNG</span>
-            <input id="singleInput" type="file" name="image" accept="image/*" hidden required>
-        </div>
-
-        <img id="singlePreview" class="preview-image" style="display:none;">
-
-        <form action="/encode" method="POST" enctype="multipart/form-data" class="with-loading">
-            <button class="btn primary">Kompres Gambar</button>
-        </form>
-
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Pengolahan Citra Digital Lab | Huffman Image Compression System</p>
+        </footer>
     </div>
 
-    <!-- Upload dataset -->
-    <div class="card">
-
-        <h2 class="section-title">Upload Dataset</h2>
-
-        <div class="upload-box" id="datasetDrop">
-            <div class="upload-icon">📁</div>
-            <p><b>Klik atau Seret Banyak File</b></p>
-            <span>Upload banyak gambar sekaligus</span>
-            <input id="datasetInput" type="file" name="dataset_images" accept="image/*" multiple hidden required>
-        </div>
-
-        <div id="datasetInfo" class="dataset-info">Belum ada file dipilih</div>
-
-        <form action="/dataset-upload" method="POST" enctype="multipart/form-data" class="with-loading">
-            <button class="btn success">Kompres Semua Dataset</button>
-        </form>
-
-    </div>
-
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const body = document.body;
-    const themeToggle = document.getElementById("themeToggle");
-    const overlay = document.getElementById("loadingOverlay");
-
-    // Restore dark mode
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-        body.classList.add("dark-mode");
-        themeToggle.textContent = "☀️";
-    }
-
-    themeToggle.addEventListener("click", () => {
-        body.classList.toggle("dark-mode");
-        const dark = body.classList.contains("dark-mode");
-        themeToggle.textContent = dark ? "☀️" : "🌙";
-        localStorage.setItem("theme", dark ? "dark" : "light");
-    });
-
-    // Drag & drop
-    function uploadBox(drop, input) {
-        drop.addEventListener("click", () => input.click());
-
-        drop.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            drop.classList.add("dragover");
-        });
-
-        drop.addEventListener("dragleave", () => {
-            drop.classList.remove("dragover");
-        });
-
-        drop.addEventListener("drop", (e) => {
-            e.preventDefault();
-            drop.classList.remove("dragover");
-            input.files = e.dataTransfer.files;
-            input.dispatchEvent(new Event("change"));
-        });
-    }
-
-    uploadBox(document.getElementById("singleDrop"), document.getElementById("singleInput"));
-    uploadBox(document.getElementById("datasetDrop"), document.getElementById("datasetInput"));
-
-    // Preview gambar
-    const input = document.getElementById("singleInput");
-    const preview = document.getElementById("singlePreview");
-
-    input.addEventListener("change", () => {
-        const file = input.files[0];
-        if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = "block";
-        }
-    });
-
-    // Info dataset
-    const datasetInput = document.getElementById("datasetInput");
-    const info = document.getElementById("datasetInfo");
-
-    datasetInput.addEventListener("change", () => {
-        info.textContent = datasetInput.files.length + " file dipilih";
-    });
-
-    // Loading animation
-    document.querySelectorAll("form.with-loading").forEach(form => {
-        form.addEventListener("submit", () => {
-            overlay.classList.add("active");
-        });
-    });
-});
-</script>
-
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

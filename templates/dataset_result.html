@@ -2,252 +2,361 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Hasil Dataset</title>
-    <link rel="stylesheet" href="/static/style.css">
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Dataset - Huffman Image Compression</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-
 <body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">Hasil Kompresi Dataset</h1>
+                <p class="subtitle">Analisis {{ data.total_files }} gambar</p>
+            </div>
+        </header>
 
-<div class="container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Statistics Dashboard -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Dashboard Statistik</h2>
+                    <p class="card-description">Ringkasan performa kompresi dataset</p>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Mean Rasio</p>
+                                <p class="stat-value">{{ data.stats.mean_ratio }}:1</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Median Rasio</p>
+                                <p class="stat-value">{{ data.stats.median_ratio }}:1</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Rasio Max</p>
+                                <p class="stat-value">{{ data.stats.max_ratio }}:1</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔻</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Rasio Min</p>
+                                <p class="stat-value">{{ data.stats.min_ratio }}:1</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💾</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Total Asli</p>
+                                <p class="stat-value">{{ data.stats.total_original_kb }} KB</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🗜️</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Total Kompresi</p>
+                                <p class="stat-value">{{ data.stats.total_compressed_kb }} KB</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Total Penghematan</p>
+                                <p class="stat-value">{{ data.stats.savings_percent }}%</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-content">
+                                <p class="stat-label">Rasio Keseluruhan</p>
+                                <p class="stat-value">{{ data.stats.total_ratio }}:1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <header class="top-bar">
-        <div class="brand">HuffmanLab</div>
-        <button id="themeToggle" class="theme-toggle">🌙</button>
-    </header>
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <!-- Bar Chart -->
+                <section class="card chart-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Ukuran Asli vs Kompresi</h2>
+                        <button class="btn-icon" onclick="toggleFullscreen('barChartCard')">⛶</button>
+                    </div>
+                    <div class="card-body" id="barChartCard">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </section>
 
-    <h1 class="title">Hasil Kompresi Dataset</h1>
+                <!-- Line Chart -->
+                <section class="card chart-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Rasio Kompresi per File</h2>
+                        <button class="btn-icon" onclick="toggleFullscreen('lineChartCard')">⛶</button>
+                    </div>
+                    <div class="card-body" id="lineChartCard">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </section>
 
-    <!-- TABEL DATASET -->
-    <div class="card wide">
-        <table class="clean-table">
-            <tr>
-                <th>Nama File</th>
-                <th>Asli (bit)</th>
-                <th>Kompresi (bit)</th>
-                <th>Rasio</th>
-            </tr>
+                <!-- Pie Chart -->
+                <section class="card chart-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Total Original vs Compressed</h2>
+                        <button class="btn-icon" onclick="toggleFullscreen('pieChartCard')">⛶</button>
+                    </div>
+                    <div class="card-body" id="pieChartCard">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </section>
+            </div>
 
-            {% for r in results %}
-            <tr>
-                <td>{{ r.name }}</td>
-                <td>{{ r.original }}</td>
-                <td>{{ r.compressed }}</td>
-                <td>{{ r.ratio }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+            <!-- Data Table -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Tabel Detail Kompresi</h2>
+                    <a href="/export_csv/{{ data.timestamp }}" class="btn btn-outline">📥 Download CSV</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Filename</th>
+                                    <th>Original (KB)</th>
+                                    <th>Compressed (KB)</th>
+                                    <th>Rasio</th>
+                                    <th>Penghematan (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in data.table_data %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="filename-cell">{{ row.filename }}</td>
+                                    <td>{{ row.original_kb }}</td>
+                                    <td>{{ row.compressed_kb }}</td>
+                                    <td><span class="badge">{{ row.ratio }}:1</span></td>
+                                    <td><span class="badge-success">{{ row.savings }}%</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation -->
+            <div class="action-buttons">
+                <a href="/" class="btn btn-secondary">← Kembali ke Home</a>
+                <button onclick="window.print()" class="btn btn-outline">🖨️ Print Laporan</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Pengolahan Citra Digital Lab | Huffman Image Compression System</p>
+        </footer>
     </div>
 
-    <!-- DASHBOARD STATISTIK -->
-    <div class="card">
-        <h3>Ringkasan Statistik</h3>
-
-        {% if stats %}
-        <div class="stats-grid">
-            <div class="stat-item">
-                <h4>Rata-rata Rasio</h4>
-                <p>{{ stats.mean }}</p>
-            </div>
-            <div class="stat-item">
-                <h4>Median Rasio</h4>
-                <p>{{ stats.median }}</p>
-            </div>
-            <div class="stat-item">
-                <h4>Rasio Maksimum</h4>
-                <p>{{ stats.max }}</p>
-            </div>
-            <div class="stat-item">
-                <h4>File Paling Efisien</h4>
-                <p>{{ stats.best_name }}</p>
-            </div>
+    <!-- Fullscreen Overlay -->
+    <div id="fullscreenOverlay" class="fullscreen-overlay" onclick="closeFullscreen()">
+        <div class="fullscreen-content" onclick="event.stopPropagation()">
+            <button class="close-fullscreen" onclick="closeFullscreen()">✕</button>
+            <canvas id="fullscreenCanvas"></canvas>
         </div>
-
-        <p class="stats-total">
-            Total bit asli: <b>{{ total_original }}</b> &nbsp; | &nbsp;
-            Total bit terkompresi: <b>{{ total_compressed }}</b>
-        </p>
-        {% else %}
-        <p>Tidak ada data.</p>
-        {% endif %}
     </div>
 
-    <!-- GRAFIK BAR + LINE -->
-    <div class="card wide fullscreen-target" id="ratioCard">
-        <div class="chart-header">
-            <h3>Grafik Rasio Kompresi Dataset</h3>
-            <div class="chart-actions">
-                <button id="fullscreenToggle" class="btn small secondary">
-                    Fullscreen
-                </button>
-                <a href="/dataset-results.csv" class="btn small outline">
-                    Download CSV
-                </a>
-            </div>
-        </div>
-        <canvas id="ratioChart" height="140"></canvas>
-    </div>
+    <script>
+        // Data from Flask
+        const chartData = {{ data.chart_data | tojson }};
 
-    <!-- PIE CHART TOTAL BIT -->
-    <div class="card wide">
-        <h3>Perbandingan Total Bit Asli vs Kompresi</h3>
-        <canvas id="pieChart" height="140"></canvas>
-    </div>
-
-    <a href="/" class="btn primary">Kembali</a>
-
-</div>
-
-<script>
-/* ========================
-   DARK MODE HANDLING
-=========================== */
-document.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.getElementById("themeToggle");
-    const body = document.body;
-
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-        body.classList.add("dark-mode");
-        toggle.textContent = "☀️";
-    }
-
-    toggle.addEventListener("click", () => {
-        body.classList.toggle("dark-mode");
-        const dark = body.classList.contains("dark-mode");
-        toggle.textContent = dark ? "☀️" : "🌙";
-        localStorage.setItem("theme", dark ? "dark" : "light");
-    });
-});
-
-/* ========================
-   DATA UNTUK CHART
-=========================== */
-const labels = {{ results | map(attribute='name') | list | tojson }};
-const originalData = {{ results | map(attribute='original') | list | tojson }};
-const compressedData = {{ results | map(attribute='compressed') | list | tojson }};
-const ratioData = {{ results | map(attribute='ratio') | list | tojson }};
-const totalOriginal = {{ total_original | tojson }};
-const totalCompressed = {{ total_compressed | tojson }};
-
-/* ========================
-   BAR + LINE CHART
-=========================== */
-const ctx = document.getElementById("ratioChart").getContext("2d");
-
-const ratioChartObj = new Chart(ctx, {
-    type: "bar",
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: "Ukuran Asli (bit)",
-                data: originalData,
-                backgroundColor: "rgba(99, 102, 241, 0.35)",
-                borderColor: "rgba(99, 102, 241, 0.9)",
-                borderWidth: 1.5,
+        // Chart.js Configuration
+        const chartConfig = {
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
             },
-            {
-                label: "Kompresi (bit)",
-                data: compressedData,
-                backgroundColor: "rgba(16, 185, 129, 0.35)",
-                borderColor: "rgba(16, 185, 129, 0.9)",
-                borderWidth: 1.5,
-            },
-            {
-                label: "Rasio Kompresi",
-                data: ratioData,
-                type: "line",
-                fill: false,
-                borderColor: "rgba(239, 68, 68, 0.9)",
-                borderWidth: 2,
-                tension: 0.25,
-                yAxisID: "y1"
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: { family: 'Inter', size: 12 },
+                        color: '#374151'
+                    }
+                }
             }
-        ]
-    },
-    options: {
-        responsive: true,
-        animation: {
-            duration: 900,
-            easing: "easeOutQuart"
-        },
-        interaction: {
-            mode: "index",
-            intersect: false
-        },
-        plugins: {
-            legend: { position: "top" }
-        },
-        scales: {
-            x: {
-                ticks: { color: "#6b7280" }
+        };
+
+        // Bar Chart: Original vs Compressed Size
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Original Size (KB)',
+                        data: chartData.original_sizes,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Compressed Size (KB)',
+                        data: chartData.compressed_sizes,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }
+                ]
             },
-            y: {
-                position: "left",
-                ticks: { color: "#6b7280" }
-            },
-            y1: {
-                position: "right",
-                grid: { drawOnChartArea: false },
-                ticks: { color: "#ef4444" }
+            options: {
+                ...chartConfig,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#6b7280',
+                            font: { family: 'Inter', size: 11 }
+                        },
+                        grid: { color: 'rgba(156, 163, 175, 0.2)' }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#6b7280',
+                            font: { family: 'Inter', size: 10 }
+                        },
+                        grid: { display: false }
+                    }
+                }
             }
+        });
+
+        // Line Chart: Compression Ratios
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Compression Ratio',
+                    data: chartData.ratios,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                ...chartConfig,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#6b7280',
+                            font: { family: 'Inter', size: 11 }
+                        },
+                        grid: { color: 'rgba(156, 163, 175, 0.2)' }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#6b7280',
+                            font: { family: 'Inter', size: 10 }
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Pie Chart: Total Comparison
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const totalOriginal = chartData.original_sizes.reduce((a, b) => a + b, 0);
+        const totalCompressed = chartData.compressed_sizes.reduce((a, b) => a + b, 0);
+
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Total Original (KB)', 'Total Compressed (KB)'],
+                datasets: [{
+                    data: [totalOriginal, totalCompressed],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                ...chartConfig,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#374151',
+                            padding: 15
+                        }
+                    }
+                }
+            }
+        });
+
+        // Fullscreen functionality
+        let currentChart = null;
+
+        function toggleFullscreen(cardId) {
+            const overlay = document.getElementById('fullscreenOverlay');
+            const card = document.getElementById(cardId);
+            const canvas = card.querySelector('canvas');
+            const fullscreenCanvas = document.getElementById('fullscreenCanvas');
+
+            // Clone chart data
+            currentChart = canvas;
+            overlay.style.display = 'flex';
+
+            // Animate in
+            setTimeout(() => overlay.classList.add('active'), 10);
         }
-    }
-});
 
-/* ========================
-   PIE CHART
-=========================== */
-const pieCtx = document.getElementById("pieChart").getContext("2d");
-
-new Chart(pieCtx, {
-    type: "doughnut",
-    data: {
-        labels: ["Total Asli (bit)", "Total Kompresi (bit)"],
-        datasets: [
-            {
-                data: [totalOriginal, totalCompressed],
-                backgroundColor: [
-                    "rgba(37, 99, 235, 0.8)",
-                    "rgba(16, 185, 129, 0.8)"
-                ],
-                borderColor: [
-                    "rgba(37, 99, 235, 1)",
-                    "rgba(16, 185, 129, 1)"
-                ],
-                borderWidth: 1.5
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        animation: {
-            duration: 900,
-            easing: "easeOutQuart"
-        },
-        plugins: {
-            legend: { position: "bottom" }
+        function closeFullscreen() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 300);
         }
-    }
-});
 
-/* ========================
-   FULLSCREEN TOGGLE
-=========================== */
-const ratioCard = document.getElementById("ratioCard");
-const fullscreenToggle = document.getElementById("fullscreenToggle");
-let isFullscreen = false;
-
-fullscreenToggle.addEventListener("click", () => {
-    isFullscreen = !isFullscreen;
-    ratioCard.classList.toggle("fullscreen-card", isFullscreen);
-    fullscreenToggle.textContent = isFullscreen ? "Keluar Fullscreen" : "Fullscreen";
-    ratioChartObj.resize();
-});
-</script>
-
+        // Auto scroll to top
+        window.onload = function() {
+            window.scrollTo(0, 0);
+        };
+    </script>
 </body>
 </html>
