@@ -2,130 +2,124 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Hasil Kompresi - Huffman Image Compression</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <h1 class="title">Hasil Kompresi</h1>
-                <p class="subtitle">{{ data.filename }}</p>
-            </div>
+            <h1 class="title">✅ Hasil Kompresi</h1>
+            <p class="subtitle">{{ data.filename }}</p>
         </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Statistics Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <p class="stat-label">Ukuran Asli</p>
-                        <p class="stat-value">{{ "%.2f"|format(data.original_size_kb) }} KB</p>
-                        <p class="stat-hint">{{ data.original_size_bits }} bits</p>
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Ukuran Asli</p>
+                <p class="stat-value">{{ "%.2f"|format(data.original_size_kb) }} KB</p>
+                <p class="stat-hint">{{ data.original_size_bits }} bits</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Kompresi</p>
+                <p class="stat-value">{{ "%.2f"|format(data.compressed_size_kb) }} KB</p>
+                <p class="stat-hint">{{ data.compressed_size_bits }} bits</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Rasio</p>
+                <p class="stat-value">{{ data.compression_ratio }}:1</p>
+                <p class="stat-hint">Compression ratio</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Penghematan</p>
+                <p class="stat-value">{{ data.savings_percent }}%</p>
+                <p class="stat-hint">{{ data.image_shape[1] }}×{{ data.image_shape[0] }} px</p>
+            </div>
+        </div>
+
+        <!-- Image Comparison -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🖼️ Perbandingan Gambar</h2>
+            </div>
+            <div class="card-body">
+                <div class="image-grid">
+                    <div class="image-box">
+                        <p class="image-label">Original</p>
+                        <img src="{{ data.original_image }}" alt="Original" class="result-img">
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🗜️</div>
-                    <div class="stat-content">
-                        <p class="stat-label">Ukuran Kompresi</p>
-                        <p class="stat-value">{{ "%.2f"|format(data.compressed_size_kb) }} KB</p>
-                        <p class="stat-hint">{{ data.compressed_size_bits }} bits</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-content">
-                        <p class="stat-label">Rasio Kompresi</p>
-                        <p class="stat-value">{{ data.compression_ratio }}:1</p>
-                        <p class="stat-hint">{{ data.savings_percent }}% lebih kecil</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🎨</div>
-                    <div class="stat-content">
-                        <p class="stat-label">Resolusi</p>
-                        <p class="stat-value">{{ data.image_shape[1] }}×{{ data.image_shape[0] }}</p>
-                        <p class="stat-hint">{{ data.unique_pixels }} unique pixels</p>
+                    <div class="image-box">
+                        <p class="image-label">Grayscale</p>
+                        <img src="{{ data.gray_image }}" alt="Grayscale" class="result-img">
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Image Comparison -->
-            <section class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Perbandingan Gambar</h2>
-                    <p class="card-description">Preview gambar asli dan hasil grayscale</p>
-                </div>
-                <div class="card-body">
-                    <div class="image-comparison">
-                        <div class="image-box">
-                            <p class="image-label">Gambar Asli</p>
-                            <img src="{{ data.original_image }}" alt="Original Image" class="preview-img">
-                        </div>
-                        <div class="image-box">
-                            <p class="image-label">Grayscale (Dikompresi)</p>
-                            <img src="{{ data.gray_image }}" alt="Grayscale Image" class="preview-img">
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Download Files -->
-            <section class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Download Hasil Kompresi</h2>
-                    <p class="card-description">Download file-file hasil kompresi untuk dekompresi nanti</p>
-                </div>
-                <div class="card-body">
-                    <div class="download-grid">
-                        <a href="{{ data.compressed_file }}" download class="download-btn">
-                            <div class="download-icon">📦</div>
-                            <div class="download-info">
-                                <p class="download-title">Compressed Binary</p>
-                                <p class="download-desc">{{ data.base_name }}_compressed.bin</p>
-                            </div>
-                        </a>
-                        <a href="{{ data.codes_file }}" download class="download-btn">
-                            <div class="download-icon">🔑</div>
-                            <div class="download-info">
-                                <p class="download-title">Huffman Codes</p>
-                                <p class="download-desc">{{ data.base_name }}_codes.json</p>
-                            </div>
-                        </a>
-                        <a href="{{ data.size_file }}" download class="download-btn">
-                            <div class="download-icon">📏</div>
-                            <div class="download-info">
-                                <p class="download-title">Image Size</p>
-                                <p class="download-desc">{{ data.base_name }}_size.txt</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Navigation -->
-            <div class="action-buttons">
-                <a href="/" class="btn btn-secondary">← Kembali ke Home</a>
-                <button onclick="window.print()" class="btn btn-outline">🖨️ Print Hasil</button>
+        <!-- Download Files -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">📥 Download Files</h2>
             </div>
-        </main>
+            <div class="card-body">
+                <div class="download-grid">
+                    <a href="{{ data.compressed_file }}" download class="download-btn">
+                        <div class="download-icon">📦</div>
+                        <div class="download-info">
+                            <p class="download-title">Binary</p>
+                            <p class="download-desc">.bin</p>
+                        </div>
+                    </a>
+                    <a href="{{ data.codes_file }}" download class="download-btn">
+                        <div class="download-icon">🔑</div>
+                        <div class="download-info">
+                            <p class="download-title">Codes</p>
+                            <p class="download-desc">.json</p>
+                        </div>
+                    </a>
+                    <a href="{{ data.size_file }}" download class="download-btn">
+                        <div class="download-icon">📏</div>
+                        <div class="download-info">
+                            <p class="download-title">Size</p>
+                            <p class="download-desc">.txt</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+            <a href="/" class="btn btn-secondary">← Kembali</a>
+            <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
+        </div>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>&copy; 2025 Pengolahan Citra Digital Lab | Huffman Image Compression System</p>
+            <p>&copy; 2025 Pengolahan Citra Digital Lab</p>
         </footer>
     </div>
 
-    <script>
-        // Auto scroll to top on load
-        window.onload = function() {
-            window.scrollTo(0, 0);
-        };
-    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

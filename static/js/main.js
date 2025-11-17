@@ -7,6 +7,26 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // ========================================
+    // THEME SWITCHER (Light/Dark Mode)
+    // ========================================
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') || 'light';
+
+    // Apply saved theme
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Toggle theme
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // ========================================
     // UTILITY FUNCTIONS
     // ========================================
 
