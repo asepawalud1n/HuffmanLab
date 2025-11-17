@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Dataset</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="top-bar">
+        <div class="brand">HuffmanLab</div>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </header>
+
+    <h1 class="title">Hasil Kompresi Dataset</h1>
+
+    <!-- TABEL DATASET -->
+    <div class="card wide">
+        <table class="clean-table">
+            <tr>
+                <th>Nama File</th>
+                <th>Asli (bit)</th>
+                <th>Kompresi (bit)</th>
+                <th>Rasio</th>
+            </tr>
+
+            {% for r in results %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td>{{ r.original }}</td>
+                <td>{{ r.compressed }}</td>
+                <td>{{ r.ratio }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- DASHBOARD STATISTIK -->
+    <div class="card">
+        <h3>Ringkasan Statistik</h3>
+
+        {% if stats %}
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h4>Rata-rata Rasio</h4>
+                <p>{{ stats.mean }}</p>
+            </div>
+            <div class="stat-item">
+                <h4>Median Rasio</h4>
+                <p>{{ stats.median }}</p>
+            </div>
+            <div class="stat-item">
+                <h4>Rasio Maksimum</h4>
+                <p>{{ stats.max }}</p>
+            </div>
+            <div class="stat-item">
+                <h4>File Paling Efisien</h4>
+                <p>{{ stats.best_name }}</p>
+            </div>
+        </div>
+
+        <p class="stats-total">
+            Total bit asli: <b>{{ total_original }}</b> &nbsp; | &nbsp;
+            Total bit terkompresi: <b>{{ total_compressed }}</b>
+        </p>
+        {% else %}
+        <p>Tidak ada data.</p>
+        {% endif %}
+    </div>
+
+    <!-- GRAFIK BAR + LINE -->
+    <div class="card wide fullscreen-target" id="ratioCard">
+        <div class="chart-header">
+            <h3>Grafik Rasio Kompresi Dataset</h3>
+            <div class="chart-actions">
+                <button id="fullscreenToggle" class="btn small secondary">
+                    Fullscreen
+                </button>
+                <a href="/dataset-results.csv" class="btn small outline">
+                    Download CSV
+                </a>
+            </div>
+        </div>
+        <canvas id="ratioChart" height="140"></canvas>
+    </div>
+
+    <!-- PIE CHART TOTAL BIT -->
+    <div class="card wide">
+        <h3>Perbandingan Total Bit Asli vs Kompresi</h3>
+        <canvas id="pieChart" height="140"></canvas>
+    </div>
+
+    <a href="/" class="btn primary">Kembali</a>
+
+</div>
+
+<script>
+/* ========================
+   DARK MODE HANDLING
+=========================== */
+document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("themeToggle");
+    const body = document.body;
+
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+        body.classList.add("dark-mode");
+        toggle.textContent = "☀️";
+    }
+
+    toggle.addEventListener("click", () => {
+        body.classList.toggle("dark-mode");
+        const dark = body.classList.contains("dark-mode");
+        toggle.textContent = dark ? "☀️" : "🌙";
+        localStorage.setItem("theme", dark ? "dark" : "light");
+    });
+});
+
+/* ========================
+   DATA UNTUK CHART
+=========================== */
+const labels = {{ results | map(attribute='name') | list | tojson }};
+const originalData = {{ results | map(attribute='original') | list | tojson }};
+const compressedData = {{ results | map(attribute='compressed') | list | tojson }};
+const ratioData = {{ results | map(attribute='ratio') | list | tojson }};
+const totalOriginal = {{ total_original | tojson }};
+const totalCompressed = {{ total_compressed | tojson }};
+
+/* ========================
+   BAR + LINE CHART
+=========================== */
+const ctx = document.getElementById("ratioChart").getContext("2d");
+
+const ratioChartObj = new Chart(ctx, {
+    type: "bar",
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: "Ukuran Asli (bit)",
+                data: originalData,
+                backgroundColor: "rgba(99, 102, 241, 0.35)",
+                borderColor: "rgba(99, 102, 241, 0.9)",
+                borderWidth: 1.5,
+            },
+            {
+                label: "Kompresi (bit)",
+                data: compressedData,
+                backgroundColor: "rgba(16, 185, 129, 0.35)",
+                borderColor: "rgba(16, 185, 129, 0.9)",
+                borderWidth: 1.5,
+            },
+            {
+                label: "Rasio Kompresi",
+                data: ratioData,
+                type: "line",
+                fill: false,
+                borderColor: "rgba(239, 68, 68, 0.9)",
+                borderWidth: 2,
+                tension: 0.25,
+                yAxisID: "y1"
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        animation: {
+            duration: 900,
+            easing: "easeOutQuart"
+        },
+        interaction: {
+            mode: "index",
+            intersect: false
+        },
+        plugins: {
+            legend: { position: "top" }
+        },
+        scales: {
+            x: {
+                ticks: { color: "#6b7280" }
+            },
+            y: {
+                position: "left",
+                ticks: { color: "#6b7280" }
+            },
+            y1: {
+                position: "right",
+                grid: { drawOnChartArea: false },
+                ticks: { color: "#ef4444" }
+            }
+        }
+    }
+});
+
+/* ========================
+   PIE CHART
+=========================== */
+const pieCtx = document.getElementById("pieChart").getContext("2d");
+
+new Chart(pieCtx, {
+    type: "doughnut",
+    data: {
+        labels: ["Total Asli (bit)", "Total Kompresi (bit)"],
+        datasets: [
+            {
+                data: [totalOriginal, totalCompressed],
+                backgroundColor: [
+                    "rgba(37, 99, 235, 0.8)",
+                    "rgba(16, 185, 129, 0.8)"
+                ],
+                borderColor: [
+                    "rgba(37, 99, 235, 1)",
+                    "rgba(16, 185, 129, 1)"
+                ],
+                borderWidth: 1.5
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        animation: {
+            duration: 900,
+            easing: "easeOutQuart"
+        },
+        plugins: {
+            legend: { position: "bottom" }
+        }
+    }
+});
+
+/* ========================
+   FULLSCREEN TOGGLE
+=========================== */
+const ratioCard = document.getElementById("ratioCard");
+const fullscreenToggle = document.getElementById("fullscreenToggle");
+let isFullscreen = false;
+
+fullscreenToggle.addEventListener("click", () => {
+    isFullscreen = !isFullscreen;
+    ratioCard.classList.toggle("fullscreen-card", isFullscreen);
+    fullscreenToggle.textContent = isFullscreen ? "Keluar Fullscreen" : "Fullscreen";
+    ratioChartObj.resize();
+});
+</script>
+
+</body>
+</html>

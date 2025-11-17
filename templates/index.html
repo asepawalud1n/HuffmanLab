@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kompresi Citra Huffman</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+</div>
+
+<div class="container">
+
+    <header class="top-bar">
+        <div class="brand">HuffmanLab</div>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </header>
+
+    <h1 class="title">Kompresi Citra · Metode Huffman</h1>
+
+    <!-- Upload gambar tunggal -->
+    <div class="card">
+
+        <h2 class="section-title">Upload Satu Gambar</h2>
+
+        <div class="upload-box" id="singleDrop">
+            <div class="upload-icon">📁</div>
+            <p><b>Klik atau Seret File</b></p>
+            <span>Format: JPG, PNG</span>
+            <input id="singleInput" type="file" name="image" accept="image/*" hidden required>
+        </div>
+
+        <img id="singlePreview" class="preview-image" style="display:none;">
+
+        <form action="/encode" method="POST" enctype="multipart/form-data" class="with-loading">
+            <button class="btn primary">Kompres Gambar</button>
+        </form>
+
+    </div>
+
+    <!-- Upload dataset -->
+    <div class="card">
+
+        <h2 class="section-title">Upload Dataset</h2>
+
+        <div class="upload-box" id="datasetDrop">
+            <div class="upload-icon">📁</div>
+            <p><b>Klik atau Seret Banyak File</b></p>
+            <span>Upload banyak gambar sekaligus</span>
+            <input id="datasetInput" type="file" name="dataset_images" accept="image/*" multiple hidden required>
+        </div>
+
+        <div id="datasetInfo" class="dataset-info">Belum ada file dipilih</div>
+
+        <form action="/dataset-upload" method="POST" enctype="multipart/form-data" class="with-loading">
+            <button class="btn success">Kompres Semua Dataset</button>
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const body = document.body;
+    const themeToggle = document.getElementById("themeToggle");
+    const overlay = document.getElementById("loadingOverlay");
+
+    // Restore dark mode
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+        body.classList.add("dark-mode");
+        themeToggle.textContent = "☀️";
+    }
+
+    themeToggle.addEventListener("click", () => {
+        body.classList.toggle("dark-mode");
+        const dark = body.classList.contains("dark-mode");
+        themeToggle.textContent = dark ? "☀️" : "🌙";
+        localStorage.setItem("theme", dark ? "dark" : "light");
+    });
+
+    // Drag & drop
+    function uploadBox(drop, input) {
+        drop.addEventListener("click", () => input.click());
+
+        drop.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            drop.classList.add("dragover");
+        });
+
+        drop.addEventListener("dragleave", () => {
+            drop.classList.remove("dragover");
+        });
+
+        drop.addEventListener("drop", (e) => {
+            e.preventDefault();
+            drop.classList.remove("dragover");
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event("change"));
+        });
+    }
+
+    uploadBox(document.getElementById("singleDrop"), document.getElementById("singleInput"));
+    uploadBox(document.getElementById("datasetDrop"), document.getElementById("datasetInput"));
+
+    // Preview gambar
+    const input = document.getElementById("singleInput");
+    const preview = document.getElementById("singlePreview");
+
+    input.addEventListener("change", () => {
+        const file = input.files[0];
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        }
+    });
+
+    // Info dataset
+    const datasetInput = document.getElementById("datasetInput");
+    const info = document.getElementById("datasetInfo");
+
+    datasetInput.addEventListener("change", () => {
+        info.textContent = datasetInput.files.length + " file dipilih";
+    });
+
+    // Loading animation
+    document.querySelectorAll("form.with-loading").forEach(form => {
+        form.addEventListener("submit", () => {
+            overlay.classList.add("active");
+        });
+    });
+});
+</script>
+
+</body>
+</html>

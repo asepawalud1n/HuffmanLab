@@ -1,0 +1,601 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background: #f3f4f8;
+    color: #111827;
+    transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================
+   DARK MODE
+========================== */
+
+body.dark-mode {
+    background: #050816;
+    color: #e5e7eb;
+}
+
+/* ==========================
+   LAYOUT
+========================== */
+
+.container {
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 20px 40px;
+}
+
+/* ==========================
+   TOP BAR
+========================== */
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4b5563;
+}
+
+body.dark-mode .brand {
+    color: #9ca3af;
+}
+
+.theme-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.theme-toggle:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+body.dark-mode .theme-toggle {
+    background: #111827;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+/* ==========================
+   HEADERS
+========================== */
+
+.title {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 12px 0 24px;
+    color: #111827;
+}
+
+body.dark-mode .title {
+    color: #e5e7eb;
+}
+
+/* ==========================
+   CARD
+========================== */
+
+.card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 22px;
+    transition: box-shadow 0.2s, transform 0.1s, background 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+}
+
+body.dark-mode .card {
+    background: #020617;
+    border-color: #111827;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.65);
+}
+
+.card.wide {
+    overflow-x: auto;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #111827;
+}
+
+body.dark-mode .section-title {
+    color: #e5e7eb;
+}
+
+/* ==========================
+   UPLOAD BOX
+========================== */
+
+.upload-box {
+    border-radius: 16px;
+    border: 2px dashed #cbd5f5;
+    background: #f9fafb;
+    padding: 26px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+}
+
+.upload-box:hover {
+    border-color: #6366f1;
+    background: #f3f4ff;
+}
+
+.upload-box.dragover {
+    border-color: #4f46e5;
+    background: #e5e7ff;
+    transform: translateY(-1px);
+}
+
+body.dark-mode .upload-box {
+    border-color: #1f2937;
+    background: #020617;
+}
+
+body.dark-mode .upload-box:hover,
+body.dark-mode .upload-box.dragover {
+    border-color: #6366f1;
+    background: #020617;
+}
+
+.upload-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.upload-box p {
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #111827;
+}
+
+.upload-box span {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+body.dark-mode .upload-box p {
+    color: #e5e7eb;
+}
+
+body.dark-mode .upload-box span {
+    color: #9ca3af;
+}
+
+/* ==========================
+   DATASET INFO
+========================== */
+
+.dataset-info {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+body.dark-mode .dataset-info {
+    color: #9ca3af;
+}
+
+/* ==========================
+   BUTTONS
+========================== */
+
+.btn {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    color: #ffffff;
+}
+
+.btn.primary {
+    background: #4f46e5;
+    box-shadow: 0 12px 25px rgba(79, 70, 229, 0.25);
+}
+
+.btn.success {
+    background: #16a34a;
+    box-shadow: 0 12px 25px rgba(22, 163, 74, 0.25);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.25);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+}
+
+/* ==========================
+   PREVIEW IMAGE
+========================== */
+
+.preview-image {
+    width: 100%;
+    max-height: 340px;
+    object-fit: contain;
+    margin-top: 14px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+body.dark-mode .preview-image {
+    border-color: #1f2937;
+    background: #020617;
+}
+
+/* ==========================
+   TABLE (DATASET RESULT)
+========================== */
+
+.clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.clean-table th,
+.clean-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.clean-table th {
+    font-weight: 600;
+    background: #f9fafb;
+    color: #374151;
+}
+
+.clean-table tr:nth-child(even) td {
+    background: #f9fafb;
+}
+
+.clean-table tr:hover td {
+    background: #eef2ff;
+}
+
+body.dark-mode .clean-table th {
+    background: #020617;
+    color: #e5e7eb;
+    border-bottom-color: #1f2937;
+}
+
+body.dark-mode .clean-table td {
+    border-bottom-color: #111827;
+}
+
+body.dark-mode .clean-table tr:nth-child(even) td {
+    background: #020617;
+}
+
+body.dark-mode .clean-table tr:hover td {
+    background: #020617;
+}
+
+/* ==========================
+   TEXT
+========================== */
+
+p {
+    font-size: 14px;
+    color: #374151;
+    margin: 4px 0;
+}
+
+body.dark-mode p {
+    color: #d1d5db;
+}
+
+h3 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+/* ==========================
+   LOADING OVERLAY
+========================== */
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 5px solid #e5e7eb;
+    border-top-color: #4f46e5;
+    animation: spin 0.8s linear infinite;
+    background: #ffffff;
+}
+
+body.dark-mode .spinner {
+    border-color: #1f2937;
+    border-top-color: #6366f1;
+    background: #020617;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================
+   STATS DASHBOARD
+========================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 14px 0 10px;
+}
+
+.stat-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-item h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.stat-item p {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.stats-total {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+body.dark-mode .stat-item {
+    background: #020617;
+    border-color: #111827;
+}
+
+body.dark-mode .stat-item h4 {
+    color: #9ca3af;
+}
+
+body.dark-mode .stat-item p {
+    color: #e5e7eb;
+}
+
+body.dark-mode .stats-total {
+    color: #9ca3af;
+}
+
+/* ==========================
+   CHART HEADER & ACTIONS
+========================== */
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.chart-header h3 {
+    margin: 0;
+}
+
+.chart-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* small buttons */
+.btn.small {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-top: 0;
+    border-radius: 999px;
+    box-shadow: none;
+}
+
+.btn.secondary {
+    background: #6b7280;
+}
+
+.btn.outline {
+    background: transparent;
+    color: #4f46e5;
+    border: 1px solid #cbd5f5;
+    box-shadow: none;
+}
+
+.btn.outline:hover {
+    background: #e5e7ff;
+    box-shadow: none;
+}
+
+body.dark-mode .btn.outline {
+    border-color: #4f46e5;
+    color: #e5e7eb;
+}
+
+body.dark-mode .btn.outline:hover {
+    background: #111827;
+}
+
+/* ==========================
+   FULLSCREEN CHART
+========================== */
+
+.fullscreen-card {
+    position: fixed;
+    inset: 16px;
+    z-index: 60;
+    margin: 0 !important;
+    max-width: none;
+}
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: #0f1116;
+    color: #e5e7eb;
+    padding: 40px;
+}
+
+/* HEADER */
+h1, h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+    letter-spacing: .4px;
+}
+
+/* CARD */
+.card {
+    background: #1a1d24;
+    border-radius: 16px;
+    padding: 28px;
+    margin: 25px auto;
+    width: 80%;
+    box-shadow: 0 0 30px rgba(0,0,0,.35);
+    border: 1px solid #2a2d33;
+}
+
+/* UPLOAD */
+.upload-box {
+    border: 2px dashed #3b3f46;
+    padding: 40px;
+    border-radius: 14px;
+    text-align: center;
+    transition: .25s;
+}
+
+.upload-box:hover {
+    border-color: #6366f1;
+    background: rgba(99,102,241,.05);
+    transform: scale(1.02);
+}
+
+/* BUTTON */
+.btn {
+    padding: 12px 26px;
+    margin-top: 18px;
+    background: #6366f1;
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: .2s;
+}
+
+.btn:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+}
+
+/* TABLE */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: 12px;
+    font-weight: 600;
+    background: #21242b;
+}
+
+.table td {
+    padding: 12px;
+    border-top: 1px solid #2e3138;
+}
+
+/* CHART CONTAINER */
+.chart-box {
+    margin-top: 40px;
+    background: #1b1e25;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+/* FULLSCREEN BUTTON */
+.fullscreen-btn {
+    float: right;
+    color: #4ade80;
+    cursor: pointer;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Kompresi</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="top-bar">
+        <div class="brand">HuffmanLab</div>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </header>
+
+    <h1 class="title">Hasil Kompresi</h1>
+
+    <div class="card">
+
+        <p><b>Ukuran Asli:</b> {{ original }} bit</p>
+        <p><b>Ukuran Terkompresi:</b> {{ compressed }} bit</p>
+        <p><b>Rasio Kompresi:</b> {{ ratio }}</p>
+
+        <h3>Hasil Decode:</h3>
+
+        <img src="{{ decode_image }}" class="preview-image">
+
+        <a class="btn primary" href="/">Kembali</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("themeToggle");
+    const body = document.body;
+
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+        body.classList.add("dark-mode");
+        toggle.textContent = "☀️";
+    }
+
+    toggle.addEventListener("click", () => {
+        body.classList.toggle("dark-mode");
+        const dark = body.classList.contains("dark-mode");
+        toggle.textContent = dark ? "☀️" : "🌙";
+        localStorage.setItem("theme", dark ? "dark" : "light");
+    });
+});
+</script>
+
+</body>
+</html>
